@@ -21,6 +21,25 @@ coverage, correctness and text structure.
 
 The goal is to benchmark the correlation of existing metrics with human scores. Support repository [here](https://github.com/PierreColombo/nlg_eval_via_simi_measures). Different possible generation tasks top work on : translation , data2text generation , story generation.
 
+## The Data : MLQE (MultiLingual Quality Estimation)
+
+GitHub Link : (https://github.com/facebookresearch/mlqe)
+
+Contains data for the 2020 Quality Estimation Shared Task:
+(http://www.statmt.org/wmt20/quality-estimation-task.html)
+
+Each source-target language ($sl-$tl) directory has a `*.tsv` file (training and dev) with the following columns:
+
+1) index: segment id
+2) original: original sentence
+3) translation: MT output
+4) scores: list of DA scores by all annotators - the number of annotators may vary
+5) mean: average of DA scores
+6) z_scores: list of z-standardized DA scores
+7) z_mean: average of z-standardized DA scores
+8) model_scores: NMT model score for sentence
+
+
 ## Ressources papers :
 [0] A Pseudo-Metric between Probability Distributions based on Depth-Trimmed Regions G Staerman, P Mozharovskyi, P
 Colombo, S Clémençon, F d'Alché-Buc
