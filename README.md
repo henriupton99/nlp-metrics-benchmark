@@ -1,46 +1,67 @@
-# NLP Project ENSAE 2023
-Repository for Natural Langage Processing Project (Subject 4)
-ENSAE Summer Semester 2023 
+# Text Similarity - NLP Project ENSAE 2023
 
-## Autors :
-Henri UPTON
-Robin GUILLOT
+## Auteurs
+Henri UPTON & Robin GUILLOT
 
-## Project Description :
+## Description du projet
 
-A plethora of applications of natural language processing (NLP) performs text-to-text transformation. Given an input,
-these systems are required to produce an output text that is coherent, readable and informative. Due to both high
-annotation costs and time, researchers tend to rely on automatic evaluation to compare the outputs of such systems.
-Reference-based automatic evaluation relies on comparing a candidate text produced by the NLG system and one or multiple
-reference texts (‘gold standard’) created by a human annotator. Generic automatic evaluation of NLG is a huge challenge
-as it requires building a metric that evaluates the similarity between a candidate and one or several gold-standard
-reference texts. However, the definition of success criteria is task-specific: as an example, evaluation of text
-summarization focuses on content, coherence, grammatically, conciseness, and readability, whereas machine translation
-focuses on fidelity, fluency and adequacy of the translation and data2text generation consider criteria such as data
-coverage, correctness and text structure.
+### Amorce :
 
-The goal is to benchmark the correlation of existing metrics with human scores. Support repository [here](https://github.com/PierreColombo/nlg_eval_via_simi_measures). Different possible generation tasks top work on : translation , data2text generation , story generation.
+La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text Translation). Nous disposons de divers langages dits *source* ($sl$ pour "source langage") et langages dits *cibles* ($tl$ pour "target langage"). L'objectif du modèle de NMT est de traduire un ensemble de phrases du langage source en langage cible le plus qualitativement possible. Les phrases d'entrée sont issues de diverses pages Wikipedia. Voici la liste des couples (sl, tl) accompagnés de leur diminutif (sl-tl) :
 
-## The Data : MLQE (MultiLingual Quality Estimation)
+- English-German (en-de)
+- English-Chinese (en-zh)
+- Romanian-English (ro-en)
+- Estonian-English (et-en)
+- Nepalese-English (ne-en)
+- Sinhala-English (si-en)
 
-GitHub Link : (https://github.com/facebookresearch/mlqe)
+Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de la qualité de telles métriques est leur corrélations avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
 
-Contains data for the 2020 Quality Estimation Shared Task:
-(http://www.statmt.org/wmt20/quality-estimation-task.html)
+### Les données :
 
-Each source-target language ($sl-$tl) directory has a `*.tsv` file (training and dev) with the following columns:
+La base de données MLQE (MultiLingual Quality Estimation) provient du GitHub *facebookresearch* suivant : https://github.com/facebookresearch/mlqe
 
-1) index: segment id
-2) original: original sentence
-3) translation: MT output
-4) scores: list of DA scores by all annotators - the number of annotators may vary
-5) mean: average of DA scores
-6) z_scores: list of z-standardized DA scores
-7) z_mean: average of z-standardized DA scores
-8) model_scores: NMT model score for sentence
+Elle a fait l'objet de recherches dans le cadre du concours "2020 Quality Estimation Shared Task" : http://www.statmt.org/wmt20/quality-estimation-task.html
+
+Pour ce faire, chaque traduction unique est accompagnée d'un groupe de scores qui représente des évaluations humaines de la qualité d'une traduction par des experts en traduction. Les scores sont nommés DA Scores (Direct Assessment Score) et représentent un jugement sur une échelle de 0 à 100, 100 étant la note maximale. 
+
+Les données sont organisées de la façon suivante : chaque élément concernant un couple ($sl-$tl) est regroupé dans un dossier compressé au format **.tar.gz**. 
+- sl-tl_test.tar.gz : contient les données de dev et de train
+- sl-tl.tar.gz : contient les données de test
+
+Pour un dataset de données on dispose des variables suivantes :
+
+1) index: l'identifiant unique de l'observation
+2) original: phrase source (dans le langage source $sl$)
+3) translation: phrase candidate (dans le langage target $tl$)
+4) scores: liste des DA scores de plusieurs experts pour le couple (original, translation) associé
+5) mean: moyenne des DA scores associés
+6) z_scores: liste des z-standardizé DA scores
+7) z_mean: moyenne des z-standardizé DA scores
+8) model_scores: NMT model score for sentence (à omettre)
+
+D'autres informations annexes sont disponibles :
+
+`doc_ids` : fichier listant la provenance de chaque phrase source (la page Wikipedia dans laquelle elle provient)
+
+`word-probas` : repertoire contentant :
+ 
+* `word_probas.*.$sl$tl`: log-probabilities from the NMT model for each decoded token including the <eos> token
+* `mt.*.$sl$tl`: the actual output of the NMT model before any post-processing, corresponding to the log-probas
+ above (the <eos> token is not printed, so the number of log-probabilities equals the number of tokens plus 1)
 
 
-## Ressources papers :
+## Ressources :
+
+### GitHubs :
+
+Facebook Research - MLQE Dataset : https://github.com/facebookresearch/mlqe
+
+Benchmark correlation of existing metrics with human scores :(https://github.com/PierreColombo/nlg_eval_via_simi_measures). Different possible generation tasks top work on : translation , data2text generation , story generation.
+
+
+### Papiers de recherche :
 [0] A Pseudo-Metric between Probability Distributions based on Depth-Trimmed Regions G Staerman, P Mozharovskyi, P
 Colombo, S Clémençon, F d'Alché-Buc
 
