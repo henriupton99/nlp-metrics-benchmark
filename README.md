@@ -16,7 +16,7 @@ La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text T
 - Nepalese-English (ne-en)
 - Sinhala-English (si-en)
 
-Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de la qualité de telles métriques est leur corrélations avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
+Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de telles métriques est leur corrélation avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
 
 ### Les données :
 
@@ -45,7 +45,7 @@ D'autres informations annexes sont disponibles :
 
 `doc_ids` : fichier listant la provenance de chaque phrase source (la page Wikipedia dans laquelle elle provient)
 
-`word-probas` : repertoire contentant :
+`word-probas` : repertoire contenant :
  
 * `word_probas.*.$sl$tl`: log-probabilities from the NMT model for each decoded token including the <eos> token
 * `mt.*.$sl$tl`: the actual output of the NMT model before any post-processing, corresponding to the log-probas
