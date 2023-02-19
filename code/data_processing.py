@@ -1,91 +1,144 @@
 # IMPORTS :
 import pandas as pd
-import tarfile
 
 ## DICTIONNAIRE DES COUPLES DE TRADUCTIONS :
 sl_tls = {
-    "English-German" : "en-de",
-    "English-Chinese" : "en-zh",
-    "Romanian-English" : "ro-en",
-    "Estonian-English" : "et-en",
-    "Nepalese-English" : "ne-en",
-    "Sinhala-English" : "si-en"
+    "English-German" : "ende",
+    "English-Russian" : "enru",
+    "Chinese-English" : "zhen"
 }
 
-def read_data(
-    sl_tl : str, 
-    set_type : str
+class WMT22:
+    
+    @staticmethod
+    def MQM_unlabel_score(
+        df_rates : pd.DataFrame,
+        seg_id : int,
+        sys : str
     ):
-    """collect the data for a given couple (sl, tl)
-
-    Args:
-        sl_tl (str): traduction couple (source, target)
-        set_type (str): type of the set : train, test or dev
-
-    Returns:
-        df: DataFrame
-    """
-    
-    assert sl_tl in sl_tls.values()
-    assert set_type in ["train", "dev", "test"]
-    
-    ## ACCES AUX DONNEES DE TRAIN ET DEV :
-    if set_type in ["train", "dev"]:
+        penality = {
+            "No-error" : 0,
+            "neutral" : 0,
+            "minor" : 1,
+            "major" : 5,
+            "critical" : 10
+        }
         
-        with tarfile.open("data/"+sl_tl+".tar.gz", "r:*") as tar:
-            separator = "\t"
+        try:
+            query = df_rates.loc[seg_id]
             
-            df = pd.read_csv(tar.extractfile(""+sl_tl+'/dev.'+sl_tl.replace("-","")+'.df.short.tsv'),
-                                on_bad_lines='skip',
-                                sep = separator,
-                                index_col = "index")
-        
-    ## ACCES AUX DONNEES DE TEST :
-    else:
-        
-        with tarfile.open("data/"+sl_tl+"_test.tar.gz", "r:*") as tar:
-        
-            separator = "\t"
+            query = query[query["system"] == sys]
             
-            df = pd.read_csv(tar.extractfile(""+ sl_tl+"/test20."+sl_tl.replace("-", "")+".df.short.tsv"),
-                                on_bad_lines='skip',
-                                sep = separator,
-                                index_col = "index")
+            if len(query) != 0:
+            
+                query["score"] = query["severity"].map(penality)
+            
+                return 100 * (1 - query["score"].sum()) # ajouter la somme des tokens
+            
+            else : 
+                return 100
+            
+        except :
+            return "rien"
     
-    ## CHANGE TYPES OF VARIABLES :
-    # coerce identifie les valeurs invalides par des NaN :
-    df['mean'] = pd.to_numeric(df['mean'], errors='coerce')
-
-    # retirer les observations invalides
-    df = df.dropna()
-    
-    return df
-
-def merge_bases(
-    sl_tl : str
-):
-    """Concatenate train, dev, test datasets for a given traduction couple (sl, tl)
-
-    Args:
-        sl_tl (str): traduction couple (source, target)
-
-    Returns:
-        df: DataFrame
-    """
-    
-    assert sl_tl in sl_tls.values()
-    
-    df = pd.DataFrame({})
-    
-    for set_type in ["train", "dev", "test"]:
-        query = read_data(sl_tl = sl_tl, set_type = set_type)
-        query["set_type"] = set_type
-        df = pd.concat([df, query])
-        assert list(query.columns) == list(df.columns)
+    @staticmethod
+    def MQM_google_score(
+        df_rates : pd.DataFrame,
+        seg_id : int,
+        sys : str
+    ):
         
-    df = df.reset_index().drop(["index"], axis = 1)
+        def penality(category, severity):
+            
+            if severity == "major":
+                if category == "No-translation":
+                    return -25
+                else:
+                    return -5
+            
+            elif severity == "minor":
+                if category == "Fluency/Punctuation":
+                    return -0.1
+                else :
+                    return -1
+            else:
+                return 0
         
-    return df
+        try:
+            query = df_rates.loc[seg_id]
+            
+            query = query[query["system"] == sys]
+            
+            if len(query) != 0:
+            
+                query["score"] = query.apply(lambda x : penality(x.category, x.severity), axis = 1)
+            
+                return query["score"].max()
+            
+            else : 
+                return 0
+            
+        except :
+            return "rien"
+    
+    @classmethod
+    def read_data(
+        cls,
+        sl_tl : str
+        ):
+        """collect the data for a given couple (sl, tl)
+
+        Args:
+            sl_tl (str): traduction couple (source, target)
+            set_type (str): type of the set : train, test or dev
+
+        Returns:
+            df: DataFrame
+        """
+        
+        assert sl_tl in sl_tls.values()
+        
+        df = pd.read_table("./data/generalMT2022/" + sl_tl + "/mqm_generalMT2022_" + sl_tl + ".avg_seg_scores.tsv",
+                        on_bad_lines = "skip")
+
+        
+        ## DROP NA VALUES :
+        df = df.dropna()
+        
+        ## CHANGE TYPES OF VARIABLES :
+        df['seg_id'] = df['seg_id'].astype(int)
+        #df['score'] = df['score'].astype(float)
+        
+        ## SET INDEX :
+        df = df.set_index("seg_id")
+        
+        ## GET SCORES :
+        
+        if sl_tl in ["ende", "zhen"]:
+            
+            df_rates = pd.read_table("./data/generalMT2022/" + sl_tl + "/mqm_generalMT2022_" + sl_tl + ".tsv",
+                                 on_bad_lines = "skip").set_index("seg_id")
+            
+        
+            df["score_test"] = df.apply(lambda x : WMT22.MQM_google_score(
+                df_rates = df_rates,
+                seg_id = x.name,
+                sys = x.sys
+            ), axis = 1)
+        
+        else :
+            df_rates = pd.read_table("./data/generalMT2022/" + sl_tl + "/mqm_generalMT2022_" + sl_tl + ".tsv",
+                                 on_bad_lines = "skip",
+                                 index_col = False).set_index("seg_id")
+            
+            df["score_test"] = df.apply(lambda x : WMT22.MQM_unlabel_score(
+                df_rates = df_rates,
+                seg_id = x.name,
+                sys = x.sys
+            ), axis = 1)
+        
+        
+        return df
     
     
     
