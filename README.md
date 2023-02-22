@@ -3,11 +3,48 @@
 ## Auteurs
 Henri UPTON & Robin GUILLOT
 
-## Description du projet
+## Amorce :
 
-### Amorce :
+La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text Translation). Nous disposons de divers langages dits *source* ($sl$ pour "source langage") et langages dits *cibles* ($tl$ pour "target langage"). L'objectif du modèle de NMT est de traduire un ensemble de phrases du langage source en langage cible le plus qualitativement possible.
 
-La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text Translation). Nous disposons de divers langages dits *source* ($sl$ pour "source langage") et langages dits *cibles* ($tl$ pour "target langage"). L'objectif du modèle de NMT est de traduire un ensemble de phrases du langage source en langage cible le plus qualitativement possible. Les phrases d'entrée sont issues de diverses pages Wikipedia. Voici la liste des couples (sl, tl) accompagnés de leur diminutif (sl-tl) :
+Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de telles métriques est leur corrélation avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
+
+## Untrained Metrics 
+
+L'idée principale du projet est d'évaluer des métriques qui mesurent la performance de systèmes de traduction. Un des premiers critères à considérer est leur corrélation avec le jugement humain. Les données du WMT22 nous permettent d'affecter un score humain à chaque traduction candidate des systèmes considérés via le calcul des scores **MQM** (Multidimensional Quality Metrics). Le **MQM** est un type de **Golden Score** car il correspond à un score basé sur les erreurs identifiées par les experts humains.
+
+Nous disposons de trois paires de langages source (**sl** pour "source langage") et langages cibles (**tl** pour "target langage") :
+
+- *English-German* : **ende**
+- *Chinese-English* : **zhen**
+- *English-Russian* : **enru**
+
+Pour chacune de ces trois paires, nous disposons de deux bases de données issues du GitHub Google MQM Human Evaluation (https://github.com/google/wmt-mqm-human-evaluation) :
+
+1 - **Base de données "Liste Candidats"** : répertorie les traductions de différents modèles de langage (**hyp** pour hypothèse), les phrases source (**source**), les traductions de référence établies par des experts (**ref** pour référence). 
+
+2 - **Base de données "Correction des Candidats"** : répertorie l'ensemble des erreurs faites par les modèles de traduction. Un expert humain a annoté pour chaque traduction candidate de chaque système les erreurs de traduction, en indiquant pour chaque erreur son type et sa sévérité, c'est à dire s'il s'agit d'une faute importante ou non. 
+
+Ici, le MQM pour chaque traduction candidate se calcule comme la somme sur toutes les erreurs identifiées des poids associés à leur sévérité. Les poids sont donc à percevoir comme des pénalités, où le score de la traduction se voit décrémenté d'une certaine valeur pour chaque erreur commise. Formellement, on peut écrire : 
+
+\begin{equation}
+MQM_{hyp} = - \sum_{error \in Errors} w_{error} 
+\end{equation}
+
+Le barème des poids par type d'erreur provient du concours WMT 2021, et deux tableaux récapitulatifs provenant de l'article *"Results of the WMT21 Metrics Shared Task: Evaluating Metrics with Expert-based Human Evaluations on TED and News Domain"* (https://aclanthology.org/2021.wmt-1.73/) dresse une liste exhaustive de ceux ci. La table 2 (Google MQM) est utilisée pour les paires *English-German* : **ende** et *Chinese-English* : **zhen**. La table 3 (Unlabel MQM) est utilisée pour la paire *English-Russian* : **enru**.
+
+### I.1 - *English-German* (**ende**) et *Chinese-English* (**zhen**) : **Google's MQM error**
+
+<img src="./figures/google_mqm_score.png" alt="Employee data" width="250" height="250" title="Employee Data title">
+
+### I.2 - *English-Russian* (**enru**) : **Unlabel's MQM error**
+
+<img src="./figures/unlabel_mqm_score.png" alt="Employee data" width="300" height="300" title="Employee Data title">
+
+
+## Bonus : Trained Metrics
+
+ Les phrases d'entrée sont issues de diverses pages Wikipedia. Voici la liste des couples (sl, tl) accompagnés de leur diminutif (sl-tl) :
 
 - English-German (en-de)
 - English-Chinese (en-zh)
@@ -15,10 +52,6 @@ La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text T
 - Estonian-English (et-en)
 - Nepalese-English (ne-en)
 - Sinhala-English (si-en)
-
-Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de telles métriques est leur corrélation avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
-
-### Les données :
 
 La base de données MLQE (MultiLingual Quality Estimation) provient du GitHub *facebookresearch* suivant : https://github.com/facebookresearch/mlqe
 
@@ -55,6 +88,8 @@ D'autres informations annexes sont disponibles :
 ## Ressources :
 
 ### GitHubs :
+
+Google WMT MQM Human Evaluation : https://github.com/google/wmt-mqm-human-evaluation
 
 Facebook Research - MLQE Dataset : https://github.com/facebookresearch/mlqe
 
