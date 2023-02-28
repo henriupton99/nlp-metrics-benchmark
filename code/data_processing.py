@@ -146,7 +146,7 @@ class WMT22:
                                  on_bad_lines = "skip",
                                  index_col = False)
             
-            df["score_test"] = df.apply(lambda x : WMT22.MQM_unlabel_score(
+            df["score"] = df.apply(lambda x : WMT22.MQM_unlabel_score(
                 df_rates = df_rates,
                 source = x.source,
                 sys = x.sys,

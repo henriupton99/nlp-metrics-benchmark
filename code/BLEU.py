@@ -61,7 +61,7 @@ class Sentence_BLEU:
             P_n[n-1] = p_n
         
         
-        return np.exp(np.sum(self.w * np.log(P_n)))
+        return np.exp(np.sum(self.w * np.log(P_n + 1e-10)))
     
         
         
