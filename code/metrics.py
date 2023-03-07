@@ -1,5 +1,39 @@
+## UTILS :
 import numpy as np
+import nltk
+from nltk.tokenize import TweetTokenizer
 
+## METRICS MODULES :
+from torchmetrics.functional import bleu_score
+
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+from nltk.translate.meteor_score import meteor_score
+
+def METEOR(
+    reference : str,
+    candidate : str
+):
+    
+    hyp = TweetTokenizer().tokenize(candidate)
+    ref = TweetTokenizer().tokenize(reference)
+    
+    return meteor_score([ref], hyp)
+
+def BLEU(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [reference]
+    
+    return bleu_score(candidate, reference, n_gram = 1).item()
+    
+    
+    
+    
+## KEEP ?
+      
 class Sentence_BLEU:
     
     def __init__(self, N):
