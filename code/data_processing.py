@@ -153,17 +153,32 @@ class WMT22:
                 doc = x.doc
             ), axis = 1)
         
+        
         df.to_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
         
         return df
     
     @classmethod
     def read_data(
-        cls,
-        sl_tl : str
+        cls
     ):
         
-        return pd.read_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+        for index, sl_tl in enumerate(sl_tls.keys()):
+            
+            query = pd.read_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+            
+            query["sltl"] = sl_tl
+            
+            if index == 0:
+                
+                df = query.copy()
+            
+            else :
+                
+                df = pd.concat([df, query])
+            
+        
+        return df
     
     
     
