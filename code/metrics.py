@@ -1,14 +1,20 @@
 ## UTILS :
 import numpy as np
+import pandas as pd
+from tqdm import tqdm
 import nltk
 from nltk.tokenize import TweetTokenizer
+from data_processing import dataset
+from torch.utils.data import DataLoader
 
 ## METRICS MODULES :
 from torchmetrics.functional import bleu_score
 
-nltk.download('wordnet')
-nltk.download('omw-1.4')
-from nltk.translate.meteor_score import meteor_score
+try :
+    from nltk.translate.meteor_score import meteor_score
+except :
+    nltk.download('wordnet')
+    nltk.download('omw-1.4')
 
 from nltk.translate import nist_score
 
@@ -55,6 +61,58 @@ def WACC(
     
     return 1 - wer
 
+def compute_metrics(
+    set_name : str,
+    metrics : list,
+    batch_size : int,
+    path : str = None):
+    
+    df = dataset(set_name = set_name)
+    
+    dataloader = DataLoader(
+        df,
+        batch_size = batch_size,
+        shuffle = False
+    )
+    
+    hyps = { "hyp" : [] }
+    refs = { "ref" : [] }
+    gold_scores = {"gold_score" : [] }
+    metrics_scores = { str(metric.__name__) : []
+                      for metric in metrics
+    }
+    
+    
+    for batch in tqdm(dataloader):
+        
+        hyp, ref, gold_score = batch
+        
+        for i in range(len(hyp)):
+            
+            hyps["hyp"].append(hyp[i])
+            refs["ref"].append(ref[i])
+            gold_scores["gold_score"].append(gold_score[i].item())
+                    
+            for metric in metrics:   
+ 
+                metrics_scores[str(metric.__name__)].append(metric(ref[i], hyp[i]))
+            
+    if path is not None:
+            
+        df = pd.DataFrame(data = hyps | refs | gold_scores | metrics_scores)
+        
+        df = df.set_index("gold_score")
+        
+        df.to_csv(path)
+    
+    
+    return metrics_scores
+            
+            
+        
+        
+    
+    
     
     
     
