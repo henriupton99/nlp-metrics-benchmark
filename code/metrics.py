@@ -10,6 +10,20 @@ nltk.download('wordnet')
 nltk.download('omw-1.4')
 from nltk.translate.meteor_score import meteor_score
 
+from nltk.translate import nist_score
+
+from torchmetrics.functional import word_error_rate
+
+def BLEU(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [reference]
+    
+    return bleu_score(candidate, reference, n_gram = 1).item()
+    
+
 def METEOR(
     reference : str,
     candidate : str
@@ -20,14 +34,28 @@ def METEOR(
     
     return meteor_score([ref], hyp)
 
-def BLEU(
+def NIST(
+    reference : str,
+    candidate : str
+):
+    
+    hyp = TweetTokenizer().tokenize(candidate)
+    ref = TweetTokenizer().tokenize(reference)
+    
+    return nist_score.sentence_nist([ref], hyp, n = 1)
+
+def WACC(
     reference : str,
     candidate : str
 ):
     
     reference = [reference]
     
-    return bleu_score(candidate, reference, n_gram = 1).item()
+    wer = word_error_rate(candidate, reference).item()
+    
+    return 1 - wer
+
+    
     
     
     
