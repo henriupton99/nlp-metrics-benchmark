@@ -2,6 +2,9 @@
 import pandas as pd
 from nltk import TweetTokenizer
 
+import torch
+from torch.utils.data import Dataset
+
 ## DICTIONNAIRE DES COUPLES DE TRADUCTIONS :
 sl_tls = {
     "ende" : "English-German",
@@ -179,6 +182,27 @@ class WMT22:
             
         
         return df
+    
+    
+class dataset(Dataset):
+    
+    def __init__(self,
+                 set_name : str):
+        
+        if set_name == "WMT22":
+            self.df = WMT22.read_data()[:100]
+        
+    def __len__(self):
+        return len(self.df)
+
+    def __getitem__(self, idx):
+        
+        hyp = self.df.iloc[idx].hyp
+        ref = self.df.iloc[idx].ref
+        gold_score = self.df.iloc[idx].score
+        
+        return hyp, ref, gold_score
+    
     
     
     
