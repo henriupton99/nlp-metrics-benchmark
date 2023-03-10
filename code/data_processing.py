@@ -190,7 +190,7 @@ class dataset(Dataset):
                  set_name : str):
         
         if set_name == "WMT22":
-            self.df = WMT22.read_data()[:100]
+            self.df = WMT22.read_data()
         
     def __len__(self):
         return len(self.df)
