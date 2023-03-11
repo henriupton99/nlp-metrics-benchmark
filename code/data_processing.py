@@ -197,11 +197,14 @@ class dataset(Dataset):
 
     def __getitem__(self, idx):
         
+        sltl = self.df.iloc[idx].sltl
         hyp = self.df.iloc[idx].hyp
         ref = self.df.iloc[idx].ref
+        domain = self.df.iloc[idx].domain
+        seg_id = self.df.iloc[idx].seg_id
         gold_score = self.df.iloc[idx].score
         
-        return hyp, ref, gold_score
+        return sltl, hyp, ref, domain, seg_id, gold_score
     
     
     

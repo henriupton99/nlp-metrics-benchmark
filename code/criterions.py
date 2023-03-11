@@ -1,4 +1,5 @@
-
+import pandas as pd
+import numpy as np
 
 def compute_correlation(
     data : pd.DataFrame,
@@ -7,7 +8,9 @@ def compute_correlation(
     correlation_type : str
 ):
     
-    return data[[metric_1, metric_2]].corr()
+    return data[[metric_1, metric_2]]\
+        .corr(method = correlation_type)\
+            .to_numpy()[0,1]
 
 def domain_coverage(
     data : pd.DataFrame,
@@ -44,3 +47,10 @@ def bad_quality_detection(
     )
     
     return corr
+
+def Borda_count(
+    ranks : np.array
+):
+    metrics_sum_ranks = np.sum(ranks, axis = 0) 
+    
+    return np.argsort(metrics_sum_ranks)

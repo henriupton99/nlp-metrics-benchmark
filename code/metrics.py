@@ -75,8 +75,11 @@ def compute_metrics(
         shuffle = False
     )
     
+    sltls = { "sltl" : [] }
     hyps = { "hyp" : [] }
     refs = { "ref" : [] }
+    domains = { "domain" : [] }
+    seg_ids = { "seg_id" : [] }
     gold_scores = {"gold_score" : [] }
     metrics_scores = { str(metric.__name__) : []
                       for metric in metrics
@@ -85,12 +88,15 @@ def compute_metrics(
     
     for batch in tqdm(dataloader):
         
-        hyp, ref, gold_score = batch
+        sltl, hyp, ref, domain, seg_id, gold_score = batch
         
         for i in range(len(hyp)):
             
+            sltls["sltl"].append(sltl[i])
             hyps["hyp"].append(hyp[i])
             refs["ref"].append(ref[i])
+            domains["domain"].append(domain[i])
+            seg_ids["seg_id"].append(seg_id[i].item())
             gold_scores["gold_score"].append(gold_score[i].item())
                     
             for metric in metrics:   
@@ -99,7 +105,7 @@ def compute_metrics(
             
     if path is not None:
             
-        df = pd.DataFrame(data = hyps | refs | gold_scores | metrics_scores)
+        df = pd.DataFrame(data = sltls | hyps | refs | domains | seg_ids | gold_scores | metrics_scores)
         
         df = df.set_index("gold_score")
         
