@@ -95,7 +95,7 @@ class WMT22:
             return "None"
     
     @classmethod
-    def data_golden_scores(
+    def data_gold_scores(
         cls,
         sl_tl : str
         ):
@@ -157,7 +157,7 @@ class WMT22:
             ), axis = 1)
         
         
-        df.to_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+        df.to_csv("./data/WMT22_w_gold_scores_" + sl_tl + ".csv")
         
         return df
     
@@ -168,7 +168,7 @@ class WMT22:
         
         for index, sl_tl in enumerate(sl_tls.keys()):
             
-            query = pd.read_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+            query = pd.read_csv("./data/WMT22_w_gold_scores_" + sl_tl + ".csv")
             
             query["sltl"] = sl_tl
             
