@@ -95,7 +95,7 @@ class WMT22:
             return "None"
     
     @classmethod
-    def data_golden_scores(
+    def data_gold_scores(
         cls,
         sl_tl : str
         ):
@@ -157,7 +157,7 @@ class WMT22:
             ), axis = 1)
         
         
-        df.to_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+        df.to_csv("./data/WMT22_w_gold_scores_" + sl_tl + ".csv")
         
         return df
     
@@ -168,7 +168,7 @@ class WMT22:
         
         for index, sl_tl in enumerate(sl_tls.keys()):
             
-            query = pd.read_csv("./data/WMT22_w_golden_scores_" + sl_tl + ".csv")
+            query = pd.read_csv("./data/WMT22_w_gold_scores_" + sl_tl + ".csv")
             
             query["sltl"] = sl_tl
             
@@ -190,18 +190,21 @@ class dataset(Dataset):
                  set_name : str):
         
         if set_name == "WMT22":
-            self.df = WMT22.read_data()[:100]
+            self.df = WMT22.read_data()
         
     def __len__(self):
         return len(self.df)
 
     def __getitem__(self, idx):
         
+        sltl = self.df.iloc[idx].sltl
         hyp = self.df.iloc[idx].hyp
         ref = self.df.iloc[idx].ref
+        domain = self.df.iloc[idx].domain
+        seg_id = self.df.iloc[idx].seg_id
         gold_score = self.df.iloc[idx].score
         
-        return hyp, ref, gold_score
+        return sltl, hyp, ref, domain, seg_id, gold_score
     
     
     
