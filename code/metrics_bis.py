@@ -11,6 +11,10 @@ from torch.utils.data import DataLoader
 from torchmetrics.functional import sacre_bleu_score, chrf_score, translation_edit_rate
 from torchmetrics.functional.text.rouge import rouge_score
 from torchmetrics.functional.text.infolm import infolm
+from torchmetrics.functional.text.bert import bert_score
+
+from bary_score import BaryScoreMetric
+from depth_score import DepthScoreMetric
 
 def Sacre_BLEU(
     reference : str,
@@ -75,16 +79,7 @@ def TER(
     
     reference = [reference]
     
-    return translation_edit_rate(candidate, reference, lowercase = True).item()
-
-def TER_asian(
-    reference : str,
-    candidate : str
-):
-    
-    reference = [reference]
-    
-    return translation_edit_rate(candidate, reference, lowercase = True, asian_support = True).item()
+    return translation_edit_rate(candidate, reference, asian_support = True, lowercase = True).item()
 
 
 def INFO_LM(
@@ -94,4 +89,43 @@ def INFO_LM(
     
     reference = [reference]
     
-    return infolm(candidate, reference, idf = False).item()   
+    return infolm(candidate, reference, idf = False).item() 
+
+
+def BERT(
+    reference : str,
+    candidate : str
+):
+    reference = [reference]
+    candidate = [candidate]
+    
+    return bert_score(candidate, reference, model_name_or_path = 'bert-base-uncased', verbose=True, idf = False)['f1']
+
+
+def BARY(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [reference]
+    candidate = [candidate]
+    
+    metric_call = BaryScoreMetric(model_name = 'bert-base-uncased', use_idfs = False)
+    metric_call.prepare_idfs(reference, candidate)
+    return metric_call.evaluate_batch(reference, candidate)['baryscore_W']
+
+
+def DEPTH(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [reference]
+    candidate = [candidate]
+    
+    metric_call = DepthScoreMetric(model_name = 'bert-base-uncased',considered_measure='wasserstein')
+    metric_call.prepare_idfs(reference, candidate)
+    return metric_call.evaluate_batch(reference, candidate)['depth_score']
+
+
+
