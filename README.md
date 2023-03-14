@@ -1,17 +1,36 @@
 # Text Similarity - NLP Project ENSAE 2023
 
-## Auteurs
+[![Code quality](https://github.com/henriupton99/nlp_project/actions/workflows/quality.yml/badge.svg)](https://github.com/baptiste-pasquier/nlp-adversarial-attacks/actions/workflows/quality.yml)
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+## Autors
 Henri UPTON & Robin GUILLOT
 
-## Amorce :
+## Overview
+
+- [1. Introduction](#1-introduction)
+- [2. Untrained Metrics](#2-untrained-metrics)
+  - [2.1. Data & Installation](#21-data-and-installation)
+  - [2.1. List of Metrics](#21-list-of-metrics)
+  - [2.2. List of Criterions](#22-list-of-criterions)
+- [3. Bonus : Trained Metrics](#4-trained-metrics)
+- [5. Ressources](#5-ressources)
+  - [5.1. Githubs](#5-githubs)
+  - [5.2. Research Papers](#5-research-papers) 
+
+
+
+## 1. Introduction
 
 La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text Translation). Nous disposons de divers langages dits *source* ($sl$ pour "source langage") et langages dits *cibles* ($tl$ pour "target langage"). L'objectif du modèle de NMT est de traduire un ensemble de phrases du langage source en langage cible le plus qualitativement possible.
 
 Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de telles métriques est leur corrélation avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
 
-## Untrained Metrics 
+## 2. Untrained Metrics 
 
 L'idée principale du projet est d'évaluer des métriques qui mesurent la performance de systèmes de traduction. Un des premiers critères à considérer est leur corrélation avec le jugement humain. Les données du WMT22 nous permettent d'affecter un score humain à chaque traduction candidate des systèmes considérés via le calcul des scores **MQM** (Multidimensional Quality Metrics). Le **MQM** est un type de **Golden Score** car il correspond à un score basé sur les erreurs identifiées par les experts humains.
+
+### 2.1. Data & Installation
 
 Nous disposons de trois paires de langages source (**sl** pour "source langage") et langages cibles (**tl** pour "target langage") :
 
@@ -41,8 +60,15 @@ Le barème des poids par type d'erreur provient du concours WMT 2021, et deux ta
 
 <img src="./figures/unlabel_mqm_score.png" alt="Employee data" width="300" height="300" title="Employee Data title">
 
+### 2.2. List of Metrics
 
-## Bonus : Trained Metrics
+ajouter list metrics
+
+### 2.3. List of Criterions
+
+ajouter list criterions
+
+## 3. Bonus : Trained Metrics
 
  Les phrases d'entrée sont issues de diverses pages Wikipedia. Voici la liste des couples (sl, tl) accompagnés de leur diminutif (sl-tl) :
 
@@ -85,9 +111,9 @@ D'autres informations annexes sont disponibles :
  above (the <eos> token is not printed, so the number of log-probabilities equals the number of tokens plus 1)
 
 
-## Ressources :
+## 5. Ressources
 
-### GitHubs :
+### 5.1. GitHubs
 
 Google WMT MQM Human Evaluation : https://github.com/google/wmt-mqm-human-evaluation
 
@@ -96,7 +122,7 @@ Facebook Research - MLQE Dataset : https://github.com/facebookresearch/mlqe
 Benchmark correlation of existing metrics with human scores :(https://github.com/PierreColombo/nlg_eval_via_simi_measures). Different possible generation tasks top work on : translation , data2text generation , story generation.
 
 
-### Papiers de recherche :
+### 5.2. Research Papers
 [0] A Pseudo-Metric between Probability Distributions based on Depth-Trimmed Regions G Staerman, P Mozharovskyi, P
 Colombo, S Clémençon, F d'Alché-Buc
 
