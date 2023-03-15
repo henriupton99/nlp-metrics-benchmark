@@ -13,9 +13,9 @@ Henri UPTON & Robin GUILLOT
   - [2.1. List of Metrics](#21-list-of-metrics)
   - [2.2. List of Criterions](#22-list-of-criterions)
 - [3. Bonus : Trained Metrics](#4-trained-metrics)
-- [5. Ressources](#5-ressources)
-  - [5.1. Githubs](#5-githubs)
-  - [5.2. Research Papers](#5-research-papers) 
+- [4. Ressources](#5-ressources)
+  - [4.1. Githubs](#5-githubs)
+  - [4.2. Research Papers](#5-research-papers) 
 
 
 
@@ -45,9 +45,9 @@ Pour chacune de ces trois paires, nous disposons de deux bases de données issue
 
 Ici, le MQM pour chaque traduction candidate se calcule comme la somme sur toutes les erreurs identifiées des poids associés à leur sévérité. Les poids sont donc à percevoir comme des pénalités, où le score de la traduction se voit décrémenté d'une certaine valeur pour chaque erreur commise. Formellement, on peut écrire : 
 
-\begin{equation}
+$
 MQM_{hyp} = - \sum_{error \in Errors} w_{error} 
-\end{equation}
+$
 
 Le barème des poids par type d'erreur provient du concours WMT 2021, et deux tableaux récapitulatifs provenant de l'article *"Results of the WMT21 Metrics Shared Task: Evaluating Metrics with Expert-based Human Evaluations on TED and News Domain"* (https://aclanthology.org/2021.wmt-1.73/) dresse une liste exhaustive de ceux ci. La table 2 (Google MQM) est utilisée pour les paires *English-German* : **ende** et *Chinese-English* : **zhen**. La table 3 (Unlabel MQM) est utilisée pour la paire *English-Russian* : **enru**.
 
