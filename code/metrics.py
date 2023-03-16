@@ -1,11 +1,14 @@
 ## UTILS :
 import numpy as np
+import os
 import pandas as pd
 from tqdm import tqdm
+from collections import defaultdict
 import nltk
 from nltk.tokenize import TweetTokenizer
 from data_processing import dataset
 from torch.utils.data import DataLoader
+from calcul_moverscore import word_mover_score
 
 ## METRICS MODULES :
 from torchmetrics.functional import bleu_score
@@ -24,7 +27,7 @@ from torchmetrics.functional import word_error_rate
 
 from nltk.translate.chrf_score import sentence_chrf
 
-from torchmetrics.functional import translation_edit_rate
+from torchmetrics.functional import translation_edit_rate, chrf_score, translation_edit_rate
 
 from torchmetrics.functional import sacre_bleu_score
 from torchmetrics.functional.text.rouge import rouge_score
@@ -33,6 +36,10 @@ from torchmetrics.functional.text.bert import bert_score
 from nlg_eval_via_simi_measures import bary_score
 from nlg_eval_via_simi_measures import depth_score
 from nlg_eval_via_simi_measures import infolm
+
+from rouge_metric import PyRouge
+
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 metric_call_bary_score = bary_score.BaryScoreMetric(
     model_name = 'bert-base-uncased',
@@ -44,7 +51,11 @@ metric_call_depth_score = depth_score.DepthScoreMetric(
     considered_measure='wasserstein'
 )
 
-metric_call_info_lm = infolm.InfoLM()
+metric_call_info_lm = infolm.InfoLM(
+    measure_to_use='fisher_rao', 
+    temperature=1.5, 
+    use_idf_weights=False
+)
 
 
 
@@ -85,6 +96,18 @@ def ROUGE_L(
     reference = [reference]
     
     return rouge_score(candidate, reference, use_stemmer = True, rouge_keys = 'rougeL')['rougeL_fmeasure'].item()
+
+def ROUGE_S4(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [[reference]]
+    candidate = [candidate]
+    
+    rouge = PyRouge(rouge_s=True, skip_gap=4)
+
+    return rouge.evaluate(candidate, reference)['rouge-s4']['f']
 
 def CHRF(
     reference : str,
@@ -166,7 +189,7 @@ def BERT(
     reference = [reference]
     candidate = [candidate]
     
-    return bert_score(candidate, reference, model_name_or_path = 'bert-base-uncased', verbose=True, idf = False)['f1']
+    return bert_score(candidate, reference, model_name_or_path = 'bert-base-uncased', idf = False)['f1']
 
 
 def BARY(
@@ -177,8 +200,8 @@ def BARY(
     reference = [reference]
     candidate = [candidate]
     
-    metric_call_bary_score.prepare_idfs(reference, candidate)
-    return metric_call_bary_score.evaluate_batch(reference, candidate)['baryscore_W'][0]
+    metric_call_bary_score.prepare_idfs(candidate, reference)
+    return metric_call_bary_score.evaluate_batch(candidate, reference)['baryscore_W'][0]
 
 
 def DEPTH(
@@ -191,6 +214,20 @@ def DEPTH(
     
     metric_call_depth_score.prepare_idfs(reference, candidate)
     return metric_call_depth_score.evaluate_batch(reference, candidate)['depth_score'][0]
+
+
+def MOVER(
+    reference : str,
+    candidate : str
+):
+    
+    reference = [reference]
+    candidate = [candidate]
+    idf_dict_ref = defaultdict(lambda: 1.)
+    idf_dict_hyp = defaultdict(lambda: 1.)
+    
+    return word_mover_score(reference, candidate, idf_dict_ref, idf_dict_hyp, n_gram=1)[0]
+
 
 
 def compute_metrics(
