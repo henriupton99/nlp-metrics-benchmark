@@ -1,4 +1,3 @@
-# IMPORTS 
 import numpy as np
 import torch
 import string
@@ -6,12 +5,7 @@ import os
 from pyemd import emd, emd_with_flow
 from transformers import AutoTokenizer, AutoModel
 
-
-# allowing to work only on a cpu
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-
-
-# use of the bert-base-uncased model for direct comparisions with other metrics (BertScore, DepthScore, BaryScore, InfoLM) 
 os.environ['MOVERSCORE_MODEL'] = 'bert-base-uncased'
 model_name = os.environ.get('MOVERSCORE_MODEL')
 tokenizer = AutoTokenizer.from_pretrained(model_name, do_lower_case=True)
@@ -19,7 +13,6 @@ model = AutoModel.from_pretrained(model_name, output_hidden_states=True, output_
 model.eval()
 model.to(device)
 
-# functions reproduced from the last version of moverscore_v2.py (repo : emnlp19-moverscore) to compute MoverScore
 def truncate(tokens):
     if len(tokens) > tokenizer.model_max_length - 2:
         tokens = tokens[0:(tokenizer.model_max_length - 2)]
@@ -29,7 +22,6 @@ def process(a):
     a = ["[CLS]"]+truncate(tokenizer.tokenize(a))+["[SEP]"]
     a = tokenizer.convert_tokens_to_ids(a)
     return set(a)
-
 
 def get_idf_dict(arr, nthreads=4):
     idf_count = Counter()

@@ -23,8 +23,6 @@ except :
     nltk.download('wordnet')
     nltk.download('omw-1.4')
 
-from nltk.translate import nist_score
-
 from torchmetrics.functional import word_error_rate
 
 from nltk.translate.chrf_score import sentence_chrf
@@ -247,6 +245,7 @@ def compute_metrics(
     sample_size : float = None,
     path : str = None
 ):
+    
     print("device : ", device)
     model = MetricsComputer(metrics = metrics).to(device)
     
@@ -322,7 +321,27 @@ def compute_metrics(
     
     
     return df
-        
+
+
+def test_metrics(
+    metrics : dict,
+    reference : str,
+    good_candidate : str,
+    avg_candidate : str,
+    bad_candidate : str
+):
+    for metrics_type in metrics.keys():
+        print("METRIC TYPE : ", metrics_type.upper())
+        metrics_list = metrics[metrics_type]
+        for metric in metrics_list:
+            start = timeit.timeit()
+            print("METRIC NAME : ", str(metric.__name__))
+            print("good candidate : ", metric(reference = reference, candidate = good_candidate))
+            print("avg candidate : ", metric(reference = reference, candidate = avg_candidate))
+            print("bad candidate : ", metric(reference = reference, candidate = bad_candidate))
+            end = timeit.timeit()
+            print("TIME : ", end - start)
+            
     
     
     

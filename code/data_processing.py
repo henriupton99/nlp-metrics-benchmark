@@ -1,18 +1,12 @@
-# IMPORTS :
 import pandas as pd
-from nltk import TweetTokenizer
-
 import torch
 from torch.utils.data import Dataset
 
-## DICTIONNAIRE DES COUPLES DE TRADUCTIONS :
 sl_tls = {
     "ende" : "English-German",
     "enru" : "English-Russian",
     "zhen" : "Chinese-English" 
 }
-
-tokenizer = TweetTokenizer()
 
 class WMT22:
     
@@ -33,15 +27,11 @@ class WMT22:
         
         try:
             query = df_rates[df_rates.source.values == source]
-            
             query = query[query["system"].values == sys]
-            
             query = query[query["doc"].values == doc]
             
             if len(query) != 0:
-            
                 query["score"] = query["severity"].map(penality)
-            
                 return query["score"].sum()
             
             else : 
@@ -59,13 +49,11 @@ class WMT22:
     ):
         
         def penality(category, severity):
-            
             if severity == "major":
                 if category == "No-translation":
                     return -25
                 else:
                     return -5
-            
             elif severity == "minor":
                 if category == "Fluency/Punctuation":
                     return -0.1
@@ -77,15 +65,11 @@ class WMT22:
         try:
             
             query = df_rates[df_rates.source.values == source]
-            
             query = query[query["system"].values == sys]
-            
             query = query[query["doc"].values == doc]
             
             if len(query) != 0:
-            
                 query["score"] = query.apply(lambda x : penality(x.category, x.severity), axis = 1)
-            
                 return query["score"].sum()
             
             else : 
@@ -99,15 +83,6 @@ class WMT22:
         cls,
         sl_tl : str
         ):
-        """collect the data for a given couple (sl, tl)
-
-        Args:
-            sl_tl (str): traduction couple (source, target)
-            set_type (str): type of the set : train, test or dev
-
-        Returns:
-            df: DataFrame
-        """
         
         assert sl_tl in sl_tls.keys()
         
@@ -115,16 +90,9 @@ class WMT22:
                         on_bad_lines = "skip")
 
         
-        ## DROP NA VALUES :
         df = df.dropna()
-        
-        ## CHANGE TYPES OF VARIABLES :
         df['seg_id'] = df['seg_id'].astype(int)
-        
-        ## SET INDEX :
         df = df.set_index("seg_id")
-        
-        ## GET SCORES :
         
         if sl_tl in ["ende", "zhen"]:
             
@@ -177,13 +145,9 @@ class WMT22:
             query["sltl"] = sl_tl
             
             if index == 0:
-                
                 df = query.copy()
-            
             else :
-                
                 df = pd.concat([df, query])
-            
         
         return df
     
