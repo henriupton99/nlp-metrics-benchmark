@@ -5,6 +5,9 @@ import os
 from pyemd import emd, emd_with_flow
 from transformers import AutoTokenizer, AutoModel
 
+# source : moverscore_v2.py from https://github.com/AIPHES/emnlp19-moverscore.git with little changes : allow to work only on a cpu + MOVERSCORE_MODEL
+# environment fixed to the bert-base-uncased pre-trained model
+
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 os.environ['MOVERSCORE_MODEL'] = 'bert-base-uncased'
 model_name = os.environ.get('MOVERSCORE_MODEL')
@@ -12,7 +15,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_name, do_lower_case=True)
 model = AutoModel.from_pretrained(model_name, output_hidden_states=True, output_attentions=True)
 model.eval()
 model.to(device)
-
+    
 def truncate(tokens):
     if len(tokens) > tokenizer.model_max_length - 2:
         tokens = tokens[0:(tokenizer.model_max_length - 2)]
