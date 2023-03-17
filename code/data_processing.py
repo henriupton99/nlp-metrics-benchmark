@@ -163,12 +163,16 @@ class WMT22:
     
     @classmethod
     def read_data(
-        cls
+        cls,
+        sample_size : float = None
     ):
         
         for index, sl_tl in enumerate(sl_tls.keys()):
             
             query = pd.read_csv("./data/WMT22_w_gold_scores_" + sl_tl + ".csv")
+            
+            if sample_size is not None:
+                query = query[:sample_size]
             
             query["sltl"] = sl_tl
             
@@ -187,10 +191,14 @@ class WMT22:
 class dataset(Dataset):
     
     def __init__(self,
-                 set_name : str):
+                 set_name : str,
+                 sample_size : float = None):
         
         if set_name == "WMT22":
-            self.df = WMT22.read_data()
+            if sample_size is not None:
+                self.df = WMT22.read_data(sample_size = sample_size)
+            else:
+                self.df = WMT22.read_data()
         
     def __len__(self):
         return len(self.df)

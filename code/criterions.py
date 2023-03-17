@@ -117,8 +117,6 @@ def Borda_count(
         criterion_scores.append(-1*score)
     
     ranks[L-1,:] = np.argsort(criterion_scores)
-    
-    print(ranks)
 
     metrics_sum_ranks = np.sum(ranks, axis = 0) 
     

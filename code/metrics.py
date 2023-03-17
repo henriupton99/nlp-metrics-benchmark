@@ -11,6 +11,8 @@ from torch.utils.data import DataLoader
 from calcul_moverscore import word_mover_score
 
 ## METRICS MODULES :
+import torch
+import timeit
 from torchmetrics.functional import bleu_score
 
 from torchmetrics.functional import sacre_bleu_score
@@ -40,6 +42,7 @@ from nlg_eval_via_simi_measures import infolm
 from rouge_metric import PyRouge
 
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
 metric_call_bary_score = bary_score.BaryScoreMetric(
     model_name = 'bert-base-uncased',
@@ -57,7 +60,7 @@ metric_call_info_lm = infolm.InfoLM(
     use_idf_weights=False
 )
 
-
+from transformers.utils import logging
 
 def BLEU(
     reference : str,
@@ -148,7 +151,7 @@ def METEOR(
     return meteor_score([ref], hyp)
 
 
-def WACC(
+def WER(
     reference : str,
     candidate : str
 ):
@@ -196,7 +199,6 @@ def BARY(
     reference : str,
     candidate : str
 ):
-    
     reference = [reference]
     candidate = [candidate]
     
@@ -228,19 +230,34 @@ def MOVER(
     
     return word_mover_score(reference, candidate, idf_dict_ref, idf_dict_hyp, n_gram=1)[0]
 
-
-
+class MetricsComputer(torch.nn.Module):
+    
+    def __init__(self, metrics):
+        super().__init__()
+        
+        self.metrics = metrics
+    
+    def forward(self, hyp, ref):
+        
+        return {str(metric.__name__) : metric(ref, hyp) for metric in self.metrics}
+        
 def compute_metrics(
     set_name : str,
     metrics : list,
-    batch_size : int,
-    path : str = None):
+    sample_size : float = None,
+    path : str = None
+):
+    print("device : ", device)
+    model = MetricsComputer(metrics = metrics).to(device)
     
-    df = dataset(set_name = set_name)
+    if sample_size is not None:
+        df = dataset(set_name = set_name, sample_size = sample_size)
+    else:
+        df = dataset(set_name = set_name)
     
     dataloader = DataLoader(
         df,
-        batch_size = batch_size,
+        batch_size = 1,
         shuffle = False
     )
     
@@ -254,41 +271,58 @@ def compute_metrics(
                       for metric in metrics
     }
     
+    count = 0
+    
+    df = pd.DataFrame([])
     
     for batch in tqdm(dataloader):
         
         sltl, hyp, ref, domain, seg_id, gold_score = batch
         
-        for i in range(len(hyp)):
-            
-            sltls["sltl"].append(sltl[i])
-            hyps["hyp"].append(hyp[i])
-            refs["ref"].append(ref[i])
-            domains["domain"].append(domain[i])
-            seg_ids["seg_id"].append(seg_id[i].item())
-            gold_scores["gold_score"].append(gold_score[i].item())
-                    
-            for metric in metrics:   
- 
-                metrics_scores[str(metric.__name__)].append(metric(ref[i], hyp[i]))
-            
-    if path is not None:
-            
-        df = pd.DataFrame(data = sltls | hyps | refs | domains | seg_ids | gold_scores | metrics_scores)
+        sltls["sltl"].append(sltl[0])
+        hyps["hyp"].append(hyp[0])
+        refs["ref"].append(ref[0])
+        domains["domain"].append(domain[0])
+        seg_ids["seg_id"].append(seg_id.item())
+        gold_scores["gold_score"].append(gold_score.item())
+        
+        scores = model(hyp[0], ref[0])
         
         for metric in metrics:
-            df[str(metric.__name__)] -= df[str(metric.__name__)].mean()
-            df[str(metric.__name__)] /= df[str(metric.__name__)].std()
+            metrics_scores[str(metric.__name__)].append(scores[str(metric.__name__)])
         
-        df["gold_score"] -= df["gold_score"].mean()
-        df["gold_score"] /= df["gold_score"].std()
-        df = df.set_index("gold_score")
+        count += 1
         
-        df.to_csv(path)
-    
-    
-    return metrics_scores
+        if count >= 100:
+            temp = pd.DataFrame(data = sltls | hyps | refs | domains | seg_ids | gold_scores | metrics_scores)
+                
+            for metric in metrics:
+                temp[str(metric.__name__)] -= temp[str(metric.__name__)].mean()
+                temp[str(metric.__name__)] /= temp[str(metric.__name__)].std()
             
+            temp["gold_score"] -= temp["gold_score"].mean()
+            temp["gold_score"] /= temp["gold_score"].std()
+            
+            df = pd.concat([df, temp])
+            
+            if path is not None:
+                df.to_csv(path)
+            
+            sltls = { "sltl" : [] }
+            hyps = { "hyp" : [] }
+            refs = { "ref" : [] }
+            domains = { "domain" : [] }
+            seg_ids = { "seg_id" : [] }
+            gold_scores = {"gold_score" : [] }
+            metrics_scores = { str(metric.__name__) : []
+                            for metric in metrics
+            }
+            
+            count = 0
+    
+    
+    return df
+        
     
     
     
