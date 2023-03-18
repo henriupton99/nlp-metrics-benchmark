@@ -3,7 +3,7 @@
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-[![My Project Status](https://img.shields.io/badge/project-active-green)](https://my-project.com)
+[![My Project Status](https://img.shields.io/badge/project-active-green)](https://github.com/henriupton99/nlp-metrics-benchmark)
 
 
 ## Autors
@@ -33,13 +33,13 @@ Henri UPTON & Robin GUILLOT
 
 Frist, clone the repository :
 ```python
-git clone -r requirements.txt
+git clone https://github.com/henriupton99/nlp-metrics-benchmark.git
 ```
 
 Then, create a virtual enviroment dedicated to this repository :
 ```python
-conda create -n project_nlp
-conda activate project_nlp
+conda create -n nlp-metrics-benchmark
+conda activate nlp-metrics-benchmark
 ```
 
 Then, install the requirements : 
@@ -127,11 +127,11 @@ Here is some results obtained for the translation pair *English-German* (**ende*
 
 - *Aggregated Ranks of each metric  obtained by Borda's Count procedure*
 
-<img src="./figures/rank_metrics_ende.png" alt="Alt text" width="600"/>
+<img src="./figures/rank_metrics_ende.png" alt="Alt text" width="700"/>
 
 - *Ranks of each metric along the different criteria* :
 
-<img src="./figures/rank_per_criterion_ende.png" alt="Alt text" width="500"/>
+<img src="./figures/rank_per_criterion_ende.png" alt="Alt text" width="700"/>
 
 All of our research can be found in our report : (TBU)
 
