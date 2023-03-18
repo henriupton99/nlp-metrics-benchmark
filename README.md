@@ -11,14 +11,20 @@ Henri UPTON & Robin GUILLOT
 
 # Overview
 
-- [1. Introduction](#1-introduction)
-- [2. Untrained Metrics](#2-untrained-metrics)
-  - [2.1. Data & Installation](#21-data-and-installation)
-  - [2.1. List of Metrics](#21-list-of-metrics)
-  - [2.2. List of Criterions](#22-list-of-criterions)
-- [4. Ressources](#5-ressources)
-  - [4.1. Githubs](#5-githubs)
-  - [4.2. Research Papers](#5-research-papers) 
+- [1. Usage](#1-Usage)
+  - [1.1. Installation](#11-installation)
+  - [1.2. Notebooks / functions](#12-notebooks-functions)
+
+- [2. Problem Framing](#2-problem-framing)
+- [3. WMT22 Dataset](#3-wmt22-dataset)
+  - [3.1. Candidates, References](#31-candidates-reference)
+  - [3.2. Gold Scores](#32-gold-scores) 
+- [4. List of Metrics](#4-list-of-metrics)
+- [5. List of Criterions](#5-list-of-criterions)
+- [6. Technical Results](#6-technical-results)
+- [7. Ressources](#7-ressources)
+  - [6. GitHubs](#8-githubs)
+  - [6. Research Papers](#6-research-papers)
 
 
 # 1. Usage
@@ -66,17 +72,17 @@ The notebook [test_criterions.ipynb](test_criterions.ipynb) use all metrics resu
 from criterions import Borda_count, plot_rank_per_citerion, plot_borda_ranks
 ```
 
-# 1. Problem Framing
+# 2. Problem Framing
 
 Over the years, more and more untrained text similarity metrics have emerged in a context where tasks are becoming increasingly numerous, such as text summarization, story writing, or translation. Compared to trained metrics, they are independent of a training set and must perform well in any context. Therefore, it becomes increasingly important to compare these metrics in order to clearly identify which ones perform the best.
 
 All untrained metrics can be divided into three categories: n-gram based, edit-based, and embedding-based. The objective of this paper is to compare all these types of metrics and to build a benchmark protocol to rank the performance of these metrics based on a list of criteria. Methods such as Borda count are used to aggregate the ranks obtained for each criterion. The focus is on the task of translation.
 
-# 2. WMT22 Dataset
+# 3. WMT22 Dataset
 
 Automatic evaluation for Machine Translation (MT) has become a challenging issue for the last decade. Since 2006, a huge Conference on MT research, WMT, is held annually since 2006, with competitions on different aspects of MT including the submission of automatic metrics producing scores for translations that have to be the best correlated with those produced by human judgments. 
 
-## 2.1. Candidates, References
+## 3.1. Candidates, References
 We focus our study on the WMT22 database, which provides sets of translations performed by NLG systems, from a source language (sl) to a target language (tl). We dispose of three pairs of source and target languages:
 
 - *English-German* : **ende**
@@ -90,7 +96,7 @@ For each of these three pairs, we have access to two databases thanks to the [Go
   2- **"Candidate Correction"** database: lists all errors made by NLG systems: several human experts has annotated for each candidate translation the translation errors, indicating for each error its type and severity, i.e., whether it is a significant error or not.
 
 
-## 2.2. Gold Scores
+## 3.2. Gold Scores
 
 One of the first criteria to consider when evaluating untrained metrics is their correlation with human judgment. The WMT22 data allows us to assign a human score to each candidate translation of the considered systems by calculating the MQM (Multidimensional Quality Metrics) scores. MQM is a type of reference because it aggregates all errors identified by human experts.
 
@@ -100,13 +106,13 @@ $
 
 The scale of weights per type of error comes from the WMT21 contest and two summary tables from [here](https://aclanthology.org/2021.wmt-1.73.pdf) list them exhaustively
 
-# 3. List of Metrics
+# 4. List of Metrics
 
 | N-Gram Based | Edit Based | Embedding Based |
 |--------------|------------|----------------|
 | <span style="color: blue;">*BLEU*, *Sacre_BLEU*, *ROUGE_1*, *ROUGE_L*, *ROUGE_S4*, *METEOR*, *CHRF*, *CHRF_1*, *CHRF_++*</span> | <span style="color: green;">*TER*, *WER*</span> | <span style="color: red;">*DepthScore*, *MoverScore*, *BaryScore*</span> |
 
-# 3. List of Criterions
+# 5. List of Criterions
 
 | Name (Abbreviation) | Intuition |
 |-----------|-----------|
@@ -115,7 +121,7 @@ The scale of weights per type of error comes from the WMT21 contest and two summ
 | *Segment Level Correlation* **(SLC)** | Does the metric accurately identify the overall quality of a segment (i.e., is its average score per segment well correlated with the gold average score per segment)?  |
 
 
-# 4. Technical Results
+# 6. Technical Results
 
 Here is some results obtained for the translation pair *English-German* (**ende**) :
 
@@ -129,16 +135,16 @@ Here is some results obtained for the translation pair *English-German* (**ende*
 
 All of our research can be found in our report : (TBU)
 
-# 5. Ressources
+# 7. Ressources
 
-## 5.1. GitHubs
+## 7.1. GitHubs
 
 [Google WMT MQM Human Evaluation](https://github.com/google/wmt-mqm-human-evaluation)
 
 [NLG Evaluation via Similarity Measures](https://github.com/PierreColombo/nlg_eval_via_simi_measures)
 
 
-## 5.2. Research Papers
+## 7.2. Research Papers
 - [@sacrebleu] Matt Post. (2018). A Call for Clarity in Reporting BLEU Scores. arXiv preprint arXiv:1804.08771. https://arxiv.org/abs/1804.08771
 
 - [@bleu] Kishore Papineni, Salim Roukos, Todd Ward, & Wei-Jing Zhu. (2002). Bleu: A Method for Automatic Evaluation of Machine Translation. In Proceedings of the 40th annual meeting of the Association for Computational Linguistics (pp. 311–318). https://aclanthology.org/P02-1040.pdf
