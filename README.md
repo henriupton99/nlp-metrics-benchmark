@@ -1,150 +1,175 @@
-# Text Similarity - NLP Project ENSAE 2023
+
+# *The Metrics Maze* : Navigating the Landscape of Evaluation Techniques for MT Systems
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+
+[![My Project Status](https://img.shields.io/badge/project-active-green)](https://my-project.com)
+
 
 ## Autors
 Henri UPTON & Robin GUILLOT
 
-## Overview
+# Overview
 
 - [1. Introduction](#1-introduction)
 - [2. Untrained Metrics](#2-untrained-metrics)
   - [2.1. Data & Installation](#21-data-and-installation)
   - [2.1. List of Metrics](#21-list-of-metrics)
   - [2.2. List of Criterions](#22-list-of-criterions)
-- [3. Bonus : Trained Metrics](#4-trained-metrics)
 - [4. Ressources](#5-ressources)
   - [4.1. Githubs](#5-githubs)
   - [4.2. Research Papers](#5-research-papers) 
 
 
+# 1. Usage
 
-## 1. Introduction
+## 1.1. Installation
 
-La tâche à l'étude est la traduction de texte par modèle NMT (Natural Text Translation). Nous disposons de divers langages dits *source* ($sl$ pour "source langage") et langages dits *cibles* ($tl$ pour "target langage"). L'objectif du modèle de NMT est de traduire un ensemble de phrases du langage source en langage cible le plus qualitativement possible.
+Frist, clone the repository :
+```python
+git clone -r requirements.txt
+```
 
-Ce dernier aspect de qualité de traduction est le point central de notre étude. En effet la tâche principale de nos analyses est de constituer un ensemble de métriques permettant d'évaluer la qualité d'une traduction unique. Le critère le plus important lors de l'évaluation de la qualité de telles métriques est leur corrélation avec le jugement humain. Conceptuellement, pour chaque couple (*sl*,*tl*), nous disposons d'un dataset $D = {R_{i}, {C_{i}, h(C_{i})}}_{i = 1}^{N}$ où pour une observation $i$, $R_{i}$ correspond à la séquence source à traduire, $C_{i}$ la traduction candidate par le modèle de NMT à l'étude, et $h(C_i)$ correspond à l'évaluation de la traduction $C_i$ par un humain. 
+Then, create a virtual enviroment dedicated to this repository :
+```python
+conda create -n project_nlp
+conda activate project_nlp
+```
 
-## 2. Untrained Metrics 
+Then, install the requirements : 
 
-L'idée principale du projet est d'évaluer des métriques qui mesurent la performance de systèmes de traduction. Un des premiers critères à considérer est leur corrélation avec le jugement humain. Les données du WMT22 nous permettent d'affecter un score humain à chaque traduction candidate des systèmes considérés via le calcul des scores **MQM** (Multidimensional Quality Metrics). Le **MQM** est un type de **Golden Score** car il correspond à un score basé sur les erreurs identifiées par les experts humains.
+```python
+pip install -r requirements.txt
+```
 
-### 2.1. Data & Installation
+## 1.2. Notebooks / Functions
 
-Nous disposons de trois paires de langages source (**sl** pour "source langage") et langages cibles (**tl** pour "target langage") :
+The notebook [data_exploration.ipynb](data_exploration.ipynb) is about data loading and vizualisations. All functions used there come from [data_processing.py](./code/data_processing.py) :
+```python
+from data_processing import WMT22, dataset
+from WMT22 import data_gold_scores, read_data
+```
+
+The notebook [test_metrics.ipynb](test_metrics.ipynb) test all the candidate metrics and runs the metrics computation process. All functions used there come from [metrics.py](./code/metrics.py) :
+```python
+# n-gram based metrics :
+from metrics import BLEU, Sacre_BLEU, ROUGE_1, ROUGE_L, ROUGE_S4, CHRF, CHRF_1, CHRF_pp, METEOR
+# edit based metrics :
+from metrics import TER, WER
+# embedding based metrics :
+from metrics import BARY, DEPTH, MOVER
+# compute and test metrics:
+from metrics import compute_metrics, test_metrics
+```
+The notebook [test_criterions.ipynb](test_criterions.ipynb) use all metrics results to proceed a benchmark w.r.t criterions (see 3. List of Criterions). All functions used there come from [criterions.py](./code/criterions.py) :
+```python
+from criterions import Borda_count, plot_rank_per_citerion, plot_borda_ranks
+```
+
+# 1. Problem Framing
+
+Over the years, more and more untrained text similarity metrics have emerged in a context where tasks are becoming increasingly numerous, such as text summarization, story writing, or translation. Compared to trained metrics, they are independent of a training set and must perform well in any context. Therefore, it becomes increasingly important to compare these metrics in order to clearly identify which ones perform the best.
+
+All untrained metrics can be divided into three categories: n-gram based, edit-based, and embedding-based. The objective of this paper is to compare all these types of metrics and to build a benchmark protocol to rank the performance of these metrics based on a list of criteria. Methods such as Borda count are used to aggregate the ranks obtained for each criterion. The focus is on the task of translation.
+
+# 2. WMT22 Dataset
+
+Automatic evaluation for Machine Translation (MT) has become a challenging issue for the last decade. Since 2006, a huge Conference on MT research, WMT, is held annually since 2006, with competitions on different aspects of MT including the submission of automatic metrics producing scores for translations that have to be the best correlated with those produced by human judgments. 
+
+## 2.1. Candidates, References
+We focus our study on the WMT22 database, which provides sets of translations performed by NLG systems, from a source language (sl) to a target language (tl). We dispose of three pairs of source and target languages:
 
 - *English-German* : **ende**
 - *Chinese-English* : **zhen**
 - *English-Russian* : **enru**
 
-Pour chacune de ces trois paires, nous disposons de deux bases de données issues du GitHub Google MQM Human Evaluation (https://github.com/google/wmt-mqm-human-evaluation) :
+For each of these three pairs, we have access to two databases thanks to the [Google MQM Human Evaluation GitHub](https://github.com/google/wmt-mqm-human-evaluation), which proposes all our variables of interest:
 
-1 - **Base de données "Liste Candidats"** : répertorie les traductions de différents modèles de langage (**hyp** pour hypothèse), les phrases source (**source**), les traductions de référence établies par des experts (**ref** pour référence). 
+  1- **"Candidate List"** database: translations candidates from different NLG systems (**hyp** for hypothesis), source sentences (**source**), and reference translations established by experts (**ref** for reference). Note that each candidate translation, there is **only one reference translation**. We also have access to the domain, the id of the segment 
 
-2 - **Base de données "Correction des Candidats"** : répertorie l'ensemble des erreurs faites par les modèles de traduction. Un expert humain a annoté pour chaque traduction candidate de chaque système les erreurs de traduction, en indiquant pour chaque erreur son type et sa sévérité, c'est à dire s'il s'agit d'une faute importante ou non. 
+  2- **"Candidate Correction"** database: lists all errors made by NLG systems: several human experts has annotated for each candidate translation the translation errors, indicating for each error its type and severity, i.e., whether it is a significant error or not.
 
-Ici, le MQM pour chaque traduction candidate se calcule comme la somme sur toutes les erreurs identifiées des poids associés à leur sévérité. Les poids sont donc à percevoir comme des pénalités, où le score de la traduction se voit décrémenté d'une certaine valeur pour chaque erreur commise. Formellement, on peut écrire : 
 
+## 2.2. Gold Scores
+
+One of the first criteria to consider when evaluating untrained metrics is their correlation with human judgment. The WMT22 data allows us to assign a human score to each candidate translation of the considered systems by calculating the MQM (Multidimensional Quality Metrics) scores. MQM is a type of reference because it aggregates all errors identified by human experts.
+
+
+$MQM_{hyp} = - \sum_{error \in Errors} w_{error}
 $
-MQM_{hyp} = - \sum_{error \in Errors} w_{error} 
-$
 
-Le barème des poids par type d'erreur provient du concours WMT 2021, et deux tableaux récapitulatifs provenant de l'article *"Results of the WMT21 Metrics Shared Task: Evaluating Metrics with Expert-based Human Evaluations on TED and News Domain"* (https://aclanthology.org/2021.wmt-1.73/) dresse une liste exhaustive de ceux ci. La table 2 (Google MQM) est utilisée pour les paires *English-German* : **ende** et *Chinese-English* : **zhen**. La table 3 (Unlabel MQM) est utilisée pour la paire *English-Russian* : **enru**.
+The scale of weights per type of error comes from the WMT21 contest and two summary tables from [here](https://aclanthology.org/2021.wmt-1.73.pdf) list them exhaustively
 
-### I.1 - *English-German* (**ende**) et *Chinese-English* (**zhen**) : **Google's MQM error**
+# 3. List of Metrics
 
-<img src="./figures/google_mqm_score.png" alt="Employee data" width="250" height="250" title="Employee Data title">
+| N-Gram Based | Edit Based | Embedding Based |
+|--------------|------------|----------------|
+| <span style="color: blue;">*BLEU*, *Sacre_BLEU*, *ROUGE_1*, *ROUGE_L*, *ROUGE_S4*, *METEOR*, *CHRF*, *CHRF_1*, *CHRF_++*</span> | <span style="color: green;">*TER*, *WER*</span> | <span style="color: red;">*DepthScore*, *MoverScore*, *BaryScore*</span> |
 
-### I.2 - *English-Russian* (**enru**) : **Unlabel's MQM error**
+# 3. List of Criterions
 
-<img src="./figures/unlabel_mqm_score.png" alt="Employee data" width="300" height="300" title="Employee Data title">
-
-### 2.2. List of Metrics
-
-ajouter list metrics
-
-### 2.3. List of Criterions
-
-ajouter list criterions
-
-## 3. Bonus : Trained Metrics
-
- Les phrases d'entrée sont issues de diverses pages Wikipedia. Voici la liste des couples (sl, tl) accompagnés de leur diminutif (sl-tl) :
-
-- English-German (en-de)
-- English-Chinese (en-zh)
-- Romanian-English (ro-en)
-- Estonian-English (et-en)
-- Nepalese-English (ne-en)
-- Sinhala-English (si-en)
-
-La base de données MLQE (MultiLingual Quality Estimation) provient du GitHub *facebookresearch* suivant : https://github.com/facebookresearch/mlqe
-
-Elle a fait l'objet de recherches dans le cadre du concours "2020 Quality Estimation Shared Task" : http://www.statmt.org/wmt20/quality-estimation-task.html
-
-Pour ce faire, chaque traduction unique est accompagnée d'un groupe de scores qui représente des évaluations humaines de la qualité d'une traduction par des experts en traduction. Les scores sont nommés DA Scores (Direct Assessment Score) et représentent un jugement sur une échelle de 0 à 100, 100 étant la note maximale. 
-
-Les données sont organisées de la façon suivante : chaque élément concernant un couple ($sl-$tl) est regroupé dans un dossier compressé au format **.tar.gz**. 
-- sl-tl_test.tar.gz : contient les données de dev et de train
-- sl-tl.tar.gz : contient les données de test
-
-Pour un dataset de données on dispose des variables suivantes :
-
-1) index: l'identifiant unique de l'observation
-2) original: phrase source (dans le langage source $sl$)
-3) translation: phrase candidate (dans le langage target $tl$)
-4) scores: liste des DA scores de plusieurs experts pour le couple (original, translation) associé
-5) mean: moyenne des DA scores associés
-6) z_scores: liste des z-standardizé DA scores
-7) z_mean: moyenne des z-standardizé DA scores
-8) model_scores: NMT model score for sentence (à omettre)
-
-D'autres informations annexes sont disponibles :
-
-`doc_ids` : fichier listant la provenance de chaque phrase source (la page Wikipedia dans laquelle elle provient)
-
-`word-probas` : repertoire contenant :
- 
-* `word_probas.*.$sl$tl`: log-probabilities from the NMT model for each decoded token including the <eos> token
-* `mt.*.$sl$tl`: the actual output of the NMT model before any post-processing, corresponding to the log-probas
- above (the <eos> token is not printed, so the number of log-probabilities equals the number of tokens plus 1)
+| Name (Abbreviation) | Intuition |
+|-----------|-----------|
+| *Domain Coverage* **(DC)** | Does the metric perform well for translating sentences from various domains (social, e-commerce, conversation, news)?  |
+| *Bad Quality Detection* **(BQD)** | Does the metric effectively detect poor-quality samples (i.e., those with the lowest gold scores)?  |
+| *Segment Level Correlation* **(SLC)** | Does the metric accurately identify the overall quality of a segment (i.e., is its average score per segment well correlated with the gold average score per segment)?  |
 
 
-## 5. Ressources
+# 4. Technical Results
 
-### 5.1. GitHubs
+Here is some results obtained for the translation pair *English-German* (**ende**) :
 
-Google WMT MQM Human Evaluation : https://github.com/google/wmt-mqm-human-evaluation
+- *Aggregated Ranks of each metric  obtained by Borda's Count procedure*
 
-Facebook Research - MLQE Dataset : https://github.com/facebookresearch/mlqe
+<img src="./figures/rank_metrics_ende.png" alt="Alt text" width="600"/>
 
-Benchmark correlation of existing metrics with human scores :(https://github.com/PierreColombo/nlg_eval_via_simi_measures). Different possible generation tasks top work on : translation , data2text generation , story generation.
+- *Ranks of each metric along the different criteria* :
+
+<img src="./figures/rank_per_criterion_ende.png" alt="Alt text" width="500"/>
+
+All of our research can be found in our report : (TBU)
+
+# 5. Ressources
+
+## 5.1. GitHubs
+
+[Google WMT MQM Human Evaluation](https://github.com/google/wmt-mqm-human-evaluation)
+
+[NLG Evaluation via Similarity Measures](https://github.com/PierreColombo/nlg_eval_via_simi_measures)
 
 
-### 5.2. Research Papers
-[0] A Pseudo-Metric between Probability Distributions based on Depth-Trimmed Regions G Staerman, P Mozharovskyi, P
-Colombo, S Clémençon, F d'Alché-Buc
+## 5.2. Research Papers
+- [@sacrebleu] Matt Post. (2018). A Call for Clarity in Reporting BLEU Scores. arXiv preprint arXiv:1804.08771. https://arxiv.org/abs/1804.08771
 
-[1] Pierre Colombo, Nathan Noiry, Ekhine Irurozki, Stephan Clemencon What are the best systems? New perspectives on NLP
-Benchmarking NeurIPS 2022
+- [@bleu] Kishore Papineni, Salim Roukos, Todd Ward, & Wei-Jing Zhu. (2002). Bleu: A Method for Automatic Evaluation of Machine Translation. In Proceedings of the 40th annual meeting of the Association for Computational Linguistics (pp. 311–318). https://aclanthology.org/P02-1040.pdf
 
-[2] Cyril Chhun, Pierre Colombo, Fabian Suchanek, Chloe Clavel Of Human Criteria and Automatic Metrics: A Benchmark of
-the Evaluation of Story Generation (oral) COLING 2022
+- [@rouge] Chin-Yew Lin. (2004). Rouge: A Package for Automatic Evaluation of summaries. In Text summarization branches out (pp. 74–81). https://aclanthology.org/W04-1013.pdf
 
-[3] Pierre Colombo, Chloé Clavel and Pablo Piantanida. InfoLM: A New Metric to Evaluate Summarization & Data2Text
-Generation. Student Outstanding Paper Award (oral) AAAI 2022
+- [@rouge_var] Chin-Yew Lin & Franz Josef Och. (2004). Automatic Evaluation of Machine Translation Quality Using Longest Common Subsequence and Skip-Bigram Statistics. In Proceedings of the 42nd Annual Meeting of the Association for Computational Linguistics (pp. 605–612). https://aclanthology.org/P04-1077.pdf
 
-[4] Pierre Colombo, Guillaume Staerman, Chloé Clavel, Pablo Piantanida. Automatic Text Evaluation through the Lens of
-Wasserstein Barycenters. (oral) EMNLP 2021
+- [@meteor] Alon Lavie & Abhaya Agarwal. (2007). Meteor: An Automatic Metric for MT Evaluation with High Levels of Correlation with Human Judgments. In Proceedings of the Second Workshop on Statistical Machine Translation (pp. 228–231). https://aclanthology.org/W07-0734.pdf
 
-[5] Pierre Colombo, Maxime Peyrard, Nathan Noiry, Robert West, Pablo Piantanida. The Glass Ceiling of Automatic
-Evaluation in Natural Language Generation
+- [@chrf] Maja Popović. (2015). chrF: character n-gram F-score for Automatic MT Evaluation. In Proceedings of the Tenth Workshop on Statistical Machine Translation (pp. 392–395). https://aclanthology.org/W15-3049.pdf
 
-[6] Hamid Jalalzai, Pierre Colombo , Chloe Clavel, Eric Gaussier, Giovanna Varni, Emmanuel Vignon, and Anne Sabourin.
-Heavy-tailed representations, text polarity classification & data augmentation. NeurIPS 2020
+- [@chrfp] Maja Popović. (2017). chrF++: words helping character n-grams. In Proceedings of the Second Conference on Machine Translation (pp. 612–618). https://www.statmt.org/wmt17/pdf/WMT70.pdf
 
-[7] Alexandre Garcia,Pierre Colombo, Slim Essid, Florence d’Alché-Buc, and Chloé Clavel. From the token to the review: A
-hierarchical multimodal approach to opinion mining. EMNLP 2020
+- [@wer] Sonja Nießen, Franz Josef Och, Gregor Leusch, & Hermann Ney. (2000). An Evaluation Tool for Machine Translation: Fast Evaluation for MT Research. In Proceedings of the 2nd International Conference on Language Resources and Evaluation. https://aclanthology.org/www.mt-archive.info/LREC-2000-Niessen.pdf
+
+- [@ter] Matthew Snover, Bonnie Dorr, Richard Schwartz, Linnea Micciulla, & John Makhoul. (2006). A Study of Translation Edit Rate with Targeted Human Annotation. In Proceedings of the 7th Conference of the Association for Machine Translation in the Americas: Technical Papers (pp. 223–231). https://aclanthology.org/2006.amta-papers.25.pdf
+
+- [@bert] Tianyi Zhang, Varsha Kishore, Felix Wu, Kilian Q. Weinberger, & Yoav Artzi. (2019). Bertscore: Evaluating text generation with BERT. arXiv preprint arXiv:1904.09675. https://arxiv.org/pdf/1904.09675.pdf
+
+- [@mover] Wei Zhao, Maxime Peyrard, Fei Liu, Yang Gao, Christian M. Meyer, & Steffen Eger. (2019). MoverScore: Text Generation Evaluating with Contextualized Embeddings and Earth Mover Distance. URL : https://arxiv.org/abs/1909.02622
+
+- [@depth]: Guillaume Staerman, Pavlo Mozharovskyi, Pierre Colombo, Stéphan Clémençon, and Florence d'Alché-Buc. 2021. A Pseudo-Metric between Probability Distributions based on Depth-Trimmed Regions. *arXiv preprint arXiv:2103.12711*. URL: https://arxiv.org/pdf/2103.12711.pdf.
+
+- [@bary]: Pierre Colombo, Guillaume Staerman, Chloé Clavel, and Pablo Piantanida. 2021. Automatic Text Evaluation through the Lens of Wasserstein Barycenters. *arXiv preprint arXiv:2108.12463*. URL: https://aclanthology.org/2021.emnlp-main.817.pdf.
+
+- [@glass]: Pierre Colombo, Maxime Peyrard, Nathan Noiry, Robert West, and Pablo Piantanida. 2022. The Glass Ceiling of Automatic Evaluation in Natural Language Generation. URL: https://deepai.org/publication/the-glass-ceiling-of-automatic-evaluation-in-natural-language-generation
+
+- [@wmtresults]: Markus Freitag, Ricardo Rei, Nitika Mathur, Chi-kiu Lo, Craig Stewart, George Foster, Alon Lavie, and Ondřej Bojar. 2021. Results of the WMT21 Metrics Shared Task: Evaluating Metrics with Expert-based Human Evaluations on TED and News Domain. In *Proceedings of the Sixth Conference on Machine Translation*, pages 733--774. URL: https://aclanthology.org/2021.wmt-1.73.pdf.
+
+- [@dataWMT]: Markus Freitag, George Foster, David Grangier, Viresh Ratnakar, Qijun Tan, and Wolfgang Macherey. 2021. Experts, Errors, and Context: A Large-Scale Study of Human Evaluation for Machine Translation. *arXiv preprint arXiv:2104.14478*. URL: https://arxiv.org/pdf/2104.14478.pdf.
 
 
 
