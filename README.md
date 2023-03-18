@@ -80,7 +80,7 @@ All untrained metrics can be divided into three categories: n-gram based, edit-b
 
 # 3. WMT22 Dataset
 
-Automatic evaluation for Machine Translation (MT) has become a challenging issue for the last decade. Since 2006, a huge Conference on MT research, WMT, is held annually since 2006, with competitions on different aspects of MT including the submission of automatic metrics producing scores for translations that have to be the best correlated with those produced by human judgments. 
+Automatic evaluation for Machine Translation (MT) has become a challenging issue for the last decade. Since 2006, a huge Conference on MT research, WMT, is held annually, with competitions on different aspects of MT including the submission of automatic metrics producing scores for translations that have to be the best correlated with those produced by human judgments. 
 
 ## 3.1. Candidates, References
 We focus our study on the WMT22 database, which provides sets of translations performed by NLG systems, from a source language (sl) to a target language (tl). We dispose of three pairs of source and target languages:
